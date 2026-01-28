@@ -46,6 +46,7 @@ async function reset() {
     await put("links.json", JSON.stringify({ links: [] }, null, 2), {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
     
     console.log("Data reset to empty");

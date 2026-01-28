@@ -39,6 +39,7 @@ function isGoogleMapsUrl(url: string): boolean {
 async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> {
   try {
     let placeName: string | null = null;
+    let placeId: string | null = null;
 
     // If it's a short link, resolve it first
     if (url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps")) {
@@ -53,25 +54,39 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
       }
     }
 
+    console.log("[Maps] Resolved URL:", url);
+
+    // Try to extract Place ID from URL
+    // Format 1: /place/.../@.../data=...!1s0x...:0x...!... (the hex after 0x is the place ID encoded)
+    // Format 2: /place/.../@.../data=...!3m1!4b1!4m6!3m5!1s<PLACE_ID>!...
+    // The place ID often appears after "!1s" or as a ChIJ... string
+    const placeIdMatch = url.match(/!1s(0x[a-f0-9]+:0x[a-f0-9]+)|!1s(ChIJ[A-Za-z0-9_-]+)/);
+    if (placeIdMatch) {
+      placeId = placeIdMatch[1] || placeIdMatch[2];
+      console.log("[Maps] Extracted Place ID:", placeId);
+    }
+
     // Extract place name from URL: /maps/place/Place+Name/...
     const placeMatch = url.match(/\/maps\/place\/([^\/]+)/);
     if (placeMatch) {
       placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+      console.log("[Maps] Extracted place name:", placeName);
     }
 
-    if (!placeName) {
+    if (!placeName && !placeId) {
       return null;
     }
 
     // Get details from Google Places API
-    const placeDetails = await fetchPlaceDetails(placeName);
+    // If we have a place ID, use it for more accurate results
+    const placeDetails = await fetchPlaceDetails(placeName, placeId);
     if (placeDetails) {
       return placeDetails;
     }
 
     // Fallback to just the name
     return {
-      title: placeName,
+      title: placeName || "Unknown Place",
       description: "",
       image: null,
       category: null,
@@ -101,7 +116,7 @@ interface PlaceMetadata {
   priceLevel: string | null;
 }
 
-async function fetchPlaceDetails(placeName: string): Promise<PlaceMetadata | null> {
+async function fetchPlaceDetails(placeName: string | null, placeId: string | null): Promise<PlaceMetadata | null> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   
   console.log("[Places API] API Key exists:", !!apiKey);
@@ -111,33 +126,65 @@ async function fetchPlaceDetails(placeName: string): Promise<PlaceMetadata | nul
     return null;
   }
   
+  let place = null;
+  
   try {
-    console.log("[Places API] Searching for:", placeName);
-    
-    const searchResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.types,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.primaryType",
-      },
-      body: JSON.stringify({
-        textQuery: placeName,
-        maxResultCount: 1,
-      }),
-    });
-    
-    console.log("[Places API] Response status:", searchResponse.status);
-    
-    const searchData = await searchResponse.json();
-    console.log("[Places API] Response:", JSON.stringify(searchData, null, 2));
-    
-    if (!searchData.places || searchData.places.length === 0) {
-      console.log("[Places API] No places found");
-      return null;
+    // If we have a place ID, fetch directly using Place Details
+    if (placeId) {
+      console.log("[Places API] Fetching by Place ID:", placeId);
+      
+      // For hex-encoded place IDs (0x...:0x...), we need to use text search with the place name
+      // For ChIJ... place IDs, we can use the Place Details endpoint directly
+      if (placeId.startsWith("ChIJ")) {
+        const detailsResponse = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "id,displayName,formattedAddress,types,rating,userRatingCount,photos,priceLevel,primaryType",
+          },
+        });
+        
+        console.log("[Places API] Details response status:", detailsResponse.status);
+        
+        if (detailsResponse.ok) {
+          place = await detailsResponse.json();
+          console.log("[Places API] Place details:", JSON.stringify(place, null, 2));
+        }
+      }
     }
     
-    const place = searchData.places[0];
+    // Fallback to text search if no place ID or if place ID lookup failed
+    if (!place && placeName) {
+      console.log("[Places API] Searching for:", placeName);
+      
+      const searchResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.types,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.primaryType",
+        },
+        body: JSON.stringify({
+          textQuery: placeName,
+          maxResultCount: 1,
+        }),
+      });
+      
+      console.log("[Places API] Response status:", searchResponse.status);
+      
+      const searchData = await searchResponse.json();
+      console.log("[Places API] Response:", JSON.stringify(searchData, null, 2));
+      
+      if (searchData.places && searchData.places.length > 0) {
+        place = searchData.places[0];
+      }
+    }
+    
+    if (!place) {
+      console.log("[Places API] No place found");
+      return null;
+    }
     
     // Category
     const category = formatPlaceType(place.primaryType || place.types?.[0]);
