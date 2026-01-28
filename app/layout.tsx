@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://patni.xyz"),
   title: "Carolyn and Rahul Go To Japan",
   description: "Our Japan trip planning - places to visit, eat, and stay",
   icons: {
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Carolyn and Rahul Go To Japan",
     description: "Our Japan trip planning - places to visit, eat, and stay",
+    siteName: "Carolyn and Rahul Go To Japan",
     images: [
       {
         url: "/hero.png",
@@ -31,6 +33,7 @@ export const metadata: Metadata = {
       },
     ],
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",

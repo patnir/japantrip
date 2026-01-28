@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, getCategoryGroup } from "./types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { X, Loader2, Star, Copy, Check } from "lucide-react";
 
 export default function Home() {
@@ -188,25 +188,22 @@ export default function Home() {
               </SelectContent>
             </Select>
 
-            <div className="flex gap-1">
-              <Badge
-                variant={selectedCategory === "all" ? "default" : "secondary"}
-                className="cursor-pointer text-xs h-6"
-                onClick={() => setSelectedCategory("all")}
-              >
+            <ToggleGroup
+              type="single"
+              value={selectedCategory}
+              onValueChange={(value) => value && setSelectedCategory(value)}
+              size="sm"
+              className="gap-1"
+            >
+              <ToggleGroupItem value="all" className="text-xs h-7 px-2.5 rounded-full">
                 All
-              </Badge>
+              </ToggleGroupItem>
               {categoryGroups.map((group) => (
-                <Badge
-                  key={group}
-                  variant={selectedCategory === group ? "default" : "secondary"}
-                  className="cursor-pointer text-xs h-6"
-                  onClick={() => setSelectedCategory(group)}
-                >
+                <ToggleGroupItem key={group} value={group} className="text-xs h-7 px-2.5 rounded-full">
                   {group}
-                </Badge>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
         )}
 
