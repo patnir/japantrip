@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backup": "npx tsx scripts/backup.ts",
+    "reset": "npx tsx scripts/reset.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

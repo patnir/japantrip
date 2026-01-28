@@ -21,6 +21,7 @@ async function writeLinks(links: Link[]): Promise<void> {
   await put(BLOB_KEY, JSON.stringify({ links }, null, 2), {
     access: "public",
     addRandomSuffix: false,
+    allowOverwrite: true,
   });
 }
 
