@@ -40,6 +40,8 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
   try {
     let placeName: string | null = null;
     let placeId: string | null = null;
+    let latitude: number | null = null;
+    let longitude: number | null = null;
 
     // If it's a short link, resolve it first
     if (url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps")) {
@@ -66,6 +68,14 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
       console.log("[Maps] Extracted Place ID:", placeId);
     }
 
+    // Extract coordinates from URL: /@35.6949274,139.6924912,17z
+    const coordsMatch = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+    if (coordsMatch) {
+      latitude = parseFloat(coordsMatch[1]);
+      longitude = parseFloat(coordsMatch[2]);
+      console.log("[Maps] Extracted coordinates:", latitude, longitude);
+    }
+
     // Extract place name from URL: /maps/place/Place+Name/...
     const placeMatch = url.match(/\/maps\/place\/([^\/]+)/);
     if (placeMatch) {
@@ -79,7 +89,7 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
 
     // Get details from Google Places API
     // If we have a place ID, use it for more accurate results
-    const placeDetails = await fetchPlaceDetails(placeName, placeId);
+    const placeDetails = await fetchPlaceDetails(placeName, placeId, latitude, longitude);
     if (placeDetails) {
       return placeDetails;
     }
@@ -116,7 +126,7 @@ interface PlaceMetadata {
   priceLevel: string | null;
 }
 
-async function fetchPlaceDetails(placeName: string | null, placeId: string | null): Promise<PlaceMetadata | null> {
+async function fetchPlaceDetails(placeName: string | null, placeId: string | null, latitude: number | null = null, longitude: number | null = null): Promise<PlaceMetadata | null> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   
   console.log("[Places API] API Key exists:", !!apiKey);
@@ -158,6 +168,32 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
     if (!place && placeName) {
       console.log("[Places API] Searching for:", placeName);
       
+      // Build search request with location bias if we have coordinates
+      const searchBody: {
+        textQuery: string;
+        maxResultCount: number;
+        locationBias?: {
+          circle: {
+            center: { latitude: number; longitude: number };
+            radius: number;
+          };
+        };
+      } = {
+        textQuery: placeName,
+        maxResultCount: 1,
+      };
+      
+      // Add location bias if we have coordinates - this is crucial for accurate results
+      if (latitude !== null && longitude !== null) {
+        searchBody.locationBias = {
+          circle: {
+            center: { latitude, longitude },
+            radius: 500, // 500 meters radius
+          },
+        };
+        console.log("[Places API] Using location bias:", latitude, longitude);
+      }
+      
       const searchResponse = await fetch("https://places.googleapis.com/v1/places:searchText", {
         method: "POST",
         headers: {
@@ -165,10 +201,7 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
           "X-Goog-Api-Key": apiKey,
           "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.types,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.primaryType",
         },
-        body: JSON.stringify({
-          textQuery: placeName,
-          maxResultCount: 1,
-        }),
+        body: JSON.stringify(searchBody),
       });
       
       console.log("[Places API] Response status:", searchResponse.status);
