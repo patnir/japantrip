@@ -12,6 +12,7 @@ export interface Link {
   reviewCount: number | null;
   priceLevel: string | null;
   createdAt: string;
+  deleted?: boolean;
 }
 
 // Based on Google Places API types: https://developers.google.com/maps/documentation/places/web-service/place-types

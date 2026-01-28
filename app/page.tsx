@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { X, Loader2, Star, Copy, Check } from "lucide-react";
+import { X, Loader2, Star, Copy, Check, Trash2 } from "lucide-react";
+import NextLink from "next/link";
 
 export default function Home() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -208,9 +209,15 @@ export default function Home() {
         )}
 
         {links.length > 0 && (
-          <p className="text-xs text-muted-foreground mb-2">
-            {filteredLinks.length} {filteredLinks.length === 1 ? "place" : "places"}
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground">
+              {filteredLinks.length} {filteredLinks.length === 1 ? "place" : "places"}
+            </p>
+            <NextLink href="/archive" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <Trash2 className="h-3 w-3" />
+              Archive
+            </NextLink>
+          </div>
         )}
 
         {isPageLoading ? (
@@ -272,7 +279,7 @@ export default function Home() {
                   {link.city && <p className="text-[10px] text-muted-foreground">{link.city}</p>}
                 </a>
 
-                <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
+                <div className="flex gap-0.5">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -288,10 +295,10 @@ export default function Home() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
+                    className="h-6 w-6 text-muted-foreground hover:bg-destructive hover:text-white"
                     onClick={() => handleDelete(link.id)}
                   >
-                    <X className="h-3 w-3 text-muted-foreground" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
