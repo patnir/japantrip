@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, restore } = await request.json();
+    const { id, restore, starred } = await request.json();
     
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -121,6 +121,10 @@ export async function PATCH(request: NextRequest) {
     
     if (restore) {
       links[linkIndex].deleted = false;
+    }
+    
+    if (typeof starred === "boolean") {
+      links[linkIndex].starred = starred;
     }
     
     await writeLinks(links);

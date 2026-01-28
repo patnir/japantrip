@@ -13,6 +13,7 @@ export interface Link {
   priceLevel: string | null;
   createdAt: string;
   deleted?: boolean;
+  starred?: boolean;
 }
 
 // Based on Google Places API types: https://developers.google.com/maps/documentation/places/web-service/place-types

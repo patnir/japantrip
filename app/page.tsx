@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { X, Loader2, Star, Copy, Check, Trash2 } from "lucide-react";
+import { X, Loader2, Star as StarIcon, Copy, Check, Trash2 } from "lucide-react";
 import NextLink from "next/link";
 
 export default function Home() {
@@ -46,10 +46,16 @@ export default function Home() {
   }, [links]);
 
   const filteredLinks = useMemo(() => {
-    return links.filter((link) => {
+    const filtered = links.filter((link) => {
       const cityMatch = selectedCity === "all" || link.city === selectedCity;
       const categoryMatch = selectedCategory === "all" || getCategoryGroup(link.types, link.category) === selectedCategory;
       return cityMatch && categoryMatch;
+    });
+    // Sort starred items to the top
+    return filtered.sort((a, b) => {
+      if (a.starred && !b.starred) return -1;
+      if (!a.starred && b.starred) return 1;
+      return 0;
     });
   }, [links, selectedCity, selectedCategory]);
 
@@ -147,6 +153,26 @@ export default function Home() {
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
       console.error("Failed to copy:", error);
+    }
+  };
+
+  const handleStar = async (id: string, currentStarred: boolean) => {
+    try {
+      const res = await fetch("/api/links", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, starred: !currentStarred }),
+      });
+
+      if (res.ok) {
+        setLinks((prev) =>
+          prev.map((link) =>
+            link.id === id ? { ...link, starred: !currentStarred } : link
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to star link:", error);
     }
   };
 
@@ -270,7 +296,7 @@ export default function Home() {
                     {link.category && <span className="line-clamp-1">{link.category}</span>}
                     {link.rating && (
                       <span className="flex items-center gap-0.5">
-                        <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
+                        <StarIcon className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
                         {link.rating}
                       </span>
                     )}
@@ -280,6 +306,14 @@ export default function Home() {
                 </a>
 
                 <div className="flex gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => handleStar(link.id, !!link.starred)}
+                  >
+                    <StarIcon className={`h-3 w-3 ${link.starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
