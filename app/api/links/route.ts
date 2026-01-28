@@ -1,31 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, head } from "@vercel/blob";
+import { Redis } from "@upstash/redis";
 import { Link } from "@/app/types";
 
-const BLOB_KEY = "links.json";
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
+const LINKS_KEY = "links";
 
 async function readLinks(): Promise<Link[]> {
-  try {
-    const blob = await head(BLOB_KEY);
-    if (!blob) return [];
-    
-    // Add cache-busting to ensure fresh data
-    const response = await fetch(`${blob.url}?t=${Date.now()}`, {
-      cache: "no-store",
-    });
-    const data = await response.json();
-    return data.links || [];
-  } catch {
-    return [];
-  }
+  const links = await redis.get<Link[]>(LINKS_KEY);
+  return links || [];
 }
 
 async function writeLinks(links: Link[]): Promise<void> {
-  await put(BLOB_KEY, JSON.stringify({ links }, null, 2), {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+  await redis.set(LINKS_KEY, links);
 }
 
 export async function GET() {

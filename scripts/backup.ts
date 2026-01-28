@@ -1,4 +1,4 @@
-import { head } from "@vercel/blob";
+import { Redis } from "@upstash/redis";
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -10,7 +10,6 @@ if (existsSync(envPath)) {
     const [key, ...valueParts] = line.split("=");
     if (key && valueParts.length > 0) {
       let value = valueParts.join("=").trim();
-      // Remove surrounding quotes if present
       if ((value.startsWith('"') && value.endsWith('"')) || 
           (value.startsWith("'") && value.endsWith("'"))) {
         value = value.slice(1, -1);
@@ -20,6 +19,11 @@ if (existsSync(envPath)) {
   }
 }
 
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
 async function backup() {
   const backupsDir = join(process.cwd(), "backups");
   
@@ -28,20 +32,18 @@ async function backup() {
   }
 
   try {
-    const blob = await head("links.json");
-    if (!blob) {
+    const links = await redis.get("links");
+    
+    if (!links) {
       console.log("No data to backup");
       return;
     }
 
-    const response = await fetch(blob.url);
-    const data = await response.json();
-    
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `links-${timestamp}.json`;
     const filepath = join(backupsDir, filename);
     
-    writeFileSync(filepath, JSON.stringify(data, null, 2));
+    writeFileSync(filepath, JSON.stringify({ links }, null, 2));
     console.log(`Backup saved to: ${filepath}`);
   } catch (error) {
     console.error("Backup failed:", error);
