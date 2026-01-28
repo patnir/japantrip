@@ -4,6 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, getCategoryGroup } from "./types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { X, Loader2, Star, Copy, Check } from "lucide-react";
 
 export default function Home() {
@@ -20,7 +28,6 @@ export default function Home() {
     return url.includes("google.com/maps") || url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps");
   };
 
-  // Get unique cities and categories from links
   const cities = useMemo(() => {
     const citySet = new Set<string>();
     links.forEach((link) => {
@@ -37,7 +44,6 @@ export default function Home() {
     return Array.from(groups).sort();
   }, [links]);
 
-  // Filter links
   const filteredLinks = useMemo(() => {
     return links.filter((link) => {
       const cityMatch = selectedCity === "all" || link.city === selectedCity;
@@ -145,15 +151,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-3 py-6 sm:py-10">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Carolyn and Rahul Go To Japan</h1>
-        </div>
+      <div className="max-w-xl mx-auto px-3 py-4">
+        <h1 className="text-lg font-semibold text-center mb-3">Carolyn and Rahul Go To Japan</h1>
 
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="mb-4">
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit} className="mb-3">
+          <div className="flex gap-1.5">
             <Input
               type="url"
               value={url}
@@ -162,96 +164,83 @@ export default function Home() {
                 setUrlError(null);
               }}
               placeholder="Paste a Google Maps link..."
-              className={`flex-1 h-10 ${urlError ? "border-red-500" : ""}`}
+              className={`flex-1 h-8 text-sm ${urlError ? "border-red-500" : ""}`}
               disabled={isLoading}
             />
-            <Button type="submit" disabled={isLoading || !url.trim()} className="h-10 px-4">
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+            <Button type="submit" disabled={isLoading || !url.trim()} size="sm" className="h-8 px-3">
+              {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
             </Button>
           </div>
-          {urlError && (
-            <p className="text-sm text-red-500 mt-1">{urlError}</p>
-          )}
+          {urlError && <p className="text-xs text-red-500 mt-1">{urlError}</p>}
         </form>
 
-        {/* Filters */}
         {links.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-            {/* City filter */}
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="h-9 px-3 text-sm border rounded-lg bg-background min-w-[100px]"
-            >
-              <option value="all">All Cities</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 mb-2 overflow-x-auto">
+            <Select value={selectedCity} onValueChange={setSelectedCity}>
+              <SelectTrigger className="h-7 w-auto min-w-[90px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Cities</SelectItem>
+                {cities.map((city) => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            {/* Category filter as pills */}
-            <div className="flex gap-1.5">
-              <button
+            <div className="flex gap-1">
+              <Badge
+                variant={selectedCategory === "all" ? "default" : "secondary"}
+                className="cursor-pointer text-xs h-6"
                 onClick={() => setSelectedCategory("all")}
-                className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-colors ${
-                  selectedCategory === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted hover:bg-muted/80"
-                }`}
               >
                 All
-              </button>
+              </Badge>
               {categoryGroups.map((group) => (
-                <button
+                <Badge
                   key={group}
+                  variant={selectedCategory === group ? "default" : "secondary"}
+                  className="cursor-pointer text-xs h-6"
                   onClick={() => setSelectedCategory(group)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-colors ${
-                    selectedCategory === group
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-muted/80"
-                  }`}
                 >
                   {group}
-                </button>
+                </Badge>
               ))}
             </div>
           </div>
         )}
 
-        {/* Count */}
         {links.length > 0 && (
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-muted-foreground mb-2">
             {filteredLinks.length} {filteredLinks.length === 1 ? "place" : "places"}
           </p>
         )}
 
-        {/* Links */}
         {isPageLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : links.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>No links saved yet</p>
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            No links saved yet
           </div>
         ) : filteredLinks.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>No matches</p>
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            No matches
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {filteredLinks.map((link) => (
               <div
                 key={link.id}
-                className="group flex items-center gap-3 p-2 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                className="group flex items-center gap-2 p-1.5 rounded-md border bg-card hover:bg-muted/50 transition-colors"
               >
-                {/* Thumbnail */}
                 {link.image ? (
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted"
+                    className="shrink-0 w-12 h-12 rounded overflow-hidden bg-muted"
                   >
                     <img
                       src={link.image}
@@ -263,54 +252,50 @@ export default function Home() {
                     />
                   </a>
                 ) : (
-                  <div className="shrink-0 w-16 h-16 rounded-md bg-muted" />
+                  <div className="shrink-0 w-12 h-12 rounded bg-muted" />
                 )}
 
-                {/* Content */}
                 <a
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-0"
                 >
-                  <h3 className="font-medium text-sm leading-tight line-clamp-1">
-                    {link.title}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                    {link.category && (
-                      <span className="line-clamp-1">{link.category}</span>
-                    )}
+                  <h3 className="font-medium text-xs leading-tight line-clamp-1">{link.title}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
+                    {link.category && <span className="line-clamp-1">{link.category}</span>}
                     {link.rating && (
                       <span className="flex items-center gap-0.5">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
                         {link.rating}
                       </span>
                     )}
                     {link.priceLevel && <span>{link.priceLevel}</span>}
                   </div>
-                  {link.city && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{link.city}</p>
-                  )}
+                  {link.city && <p className="text-[10px] text-muted-foreground">{link.city}</p>}
                 </a>
 
-                {/* Actions */}
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
-                  <button
+                <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
                     onClick={() => handleCopy(link.url, link.id)}
-                    className="p-1.5 rounded-md hover:bg-muted transition-colors"
                   >
                     {copiedId === link.id ? (
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-3 w-3 text-green-500" />
                     ) : (
-                      <Copy className="h-4 w-4 text-muted-foreground" />
+                      <Copy className="h-3 w-3 text-muted-foreground" />
                     )}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground"
                     onClick={() => handleDelete(link.id)}
-                    className="p-1.5 rounded-md hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   >
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  </Button>
                 </div>
               </div>
             ))}
