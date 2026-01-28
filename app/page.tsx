@@ -148,7 +148,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto px-3 py-6 sm:py-10">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Japan Trip</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Carolyn and Rahul Go To Japan</h1>
         </div>
 
         {/* Input */}
