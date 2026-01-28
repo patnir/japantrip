@@ -9,7 +9,10 @@ async function readLinks(): Promise<Link[]> {
     const blob = await head(BLOB_KEY);
     if (!blob) return [];
     
-    const response = await fetch(blob.url);
+    // Add cache-busting to ensure fresh data
+    const response = await fetch(`${blob.url}?t=${Date.now()}`, {
+      cache: "no-store",
+    });
     const data = await response.json();
     return data.links || [];
   } catch {

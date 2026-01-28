@@ -14,6 +14,11 @@ export default function Home() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  const isGoogleMapsUrl = (url: string) => {
+    return url.includes("google.com/maps") || url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps");
+  };
 
   // Get unique cities and categories from links
   const cities = useMemo(() => {
@@ -63,6 +68,12 @@ export default function Home() {
     e.preventDefault();
     if (!url.trim()) return;
 
+    if (!isGoogleMapsUrl(url)) {
+      setUrlError("Only Google Maps links are allowed");
+      return;
+    }
+
+    setUrlError(null);
     setIsLoading(true);
 
     try {
@@ -146,15 +157,21 @@ export default function Home() {
             <Input
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Paste a link..."
-              className="flex-1 h-10"
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setUrlError(null);
+              }}
+              placeholder="Paste a Google Maps link..."
+              className={`flex-1 h-10 ${urlError ? "border-red-500" : ""}`}
               disabled={isLoading}
             />
             <Button type="submit" disabled={isLoading || !url.trim()} className="h-10 px-4">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
             </Button>
           </div>
+          {urlError && (
+            <p className="text-sm text-red-500 mt-1">{urlError}</p>
+          )}
         </form>
 
         {/* Filters */}
