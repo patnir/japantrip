@@ -1,0 +1,48 @@
+{
+  "links": [
+    {
+      "id": "62abf0ef-6794-4a5e-8ba4-a342b9ed6bdd",
+      "url": "https://maps.app.goo.gl/Mr83zSSafh2yZGAA9",
+      "title": "coffee swamp",
+      "description": "",
+      "image": "https://places.googleapis.com/v1/places/ChIJw47GgEeNGGAR8F6RMcBz46c/photos/AcnlKN2LB0fCR1nWp60tQjhkUePic2xZ8G-tzcH91rd-4DDAD-9v7Q1gzts1DwCF67a13nJ2ETZn4Rwukpn7XlPpvTg-YecqPwgCyhdviCyukQB4Oc_C4BfiEyFwOLD6Ru5KcWL3r0KY5sm31KyiMdBuR_O7SYOVtOmYoX_ZDM012ok9XQV-H5rbkezRMikK3PsORfurMOjBQWPa86GFwYMUrD4pLCzmREgzPa_FZtEYbet3LLxywEkExp_F4edaBZSLgWzlY4O8p1iXrr8TrOofq4p6RzTL3RIdQLWdUDPZXQ-VHvsS9x0Zcmwe8PihUKViC0vxxXK2OoJ52KGhCRNv_AH3sXh2RUOZbfdmarGqLi21VXVp4SOPUKzT4D3S-A6rLm6rbCJHXGqIhwIt1Q4Z6MWRwSqCgWuVh5ImCZc2XDfgoQ/media?maxWidthPx=400&key=AIzaSyDWW15lmURPS-Z-pTbNjHJmLrWlj7VrrXQ",
+      "category": "Coffee Shop",
+      "types": [
+        "coffee_shop",
+        "cafeteria",
+        "cafe",
+        "food_store",
+        "store",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "address": "Japan, 〒160-0023 Tokyo, Shinjuku City, Nishishinjuku, 7-chōme−21−１２ れんげ荘 105号",
+      "city": "Tokyo",
+      "rating": 4.9,
+      "reviewCount": 701,
+      "priceLevel": null,
+      "createdAt": "2026-01-28T08:03:45.647Z"
+    },
+    {
+      "id": "6fb3d902-dc8d-4df0-8b4d-dfc2a1e669d9",
+      "url": "https://maps.app.goo.gl/Ure5DB1uunSrbUkW9",
+      "title": "雪月花別邸 翠雲",
+      "description": "",
+      "image": "https://places.googleapis.com/v1/places/ChIJb0gGLv-hGWARiCgD4u1RMLU/photos/AcnlKN1_-3ZZGH_tc8cMkpyJMYM75pKUKP5p_8NLITA8m4tXh3fCd9WrGD0XhplRclp0kSN2sC4dHnXTevYbBkMVwDceQXXzl7gkOSyy-9Jv_YV-XuFY4VStPqPI37EfMlzs5z_gixi_xThClkU8DCxb9TZGstsoKPWGVdvVY2NzYvfFxCrSXnuWwNQZQOLfOj1Yjt0oGVPeLwSSSHQQqConCo1vZh6wPKlQsSc0IiduAt3tKRmIjETD49FNt0BhAUiUSlh9pgySRkdwXkzotlohsXC6jUpC7Y2QPnUrtNulZkaMtw/media?maxWidthPx=400&key=AIzaSyDWW15lmURPS-Z-pTbNjHJmLrWlj7VrrXQ",
+      "category": "Japanese Inn",
+      "types": [
+        "japanese_inn",
+        "lodging",
+        "point_of_interest",
+        "establishment"
+      ],
+      "address": "1300-61 Gōra, Hakone, Ashigarashimo District, Kanagawa 250-0408, Japan",
+      "city": "Hakone",
+      "rating": 4.4,
+      "reviewCount": 789,
+      "priceLevel": null,
+      "createdAt": "2026-01-28T08:03:58.371Z"
+    }
+  ]
+}
