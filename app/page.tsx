@@ -259,18 +259,27 @@ export default function Home() {
             No matches
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {filteredLinks.map((link) => (
               <div
                 key={link.id}
-                className="group flex items-center gap-2 p-1.5 rounded-md border bg-card hover:bg-muted/50 transition-colors"
+                className="group flex items-center gap-2 p-2 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
               >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  onClick={() => handleStar(link.id, !!link.starred)}
+                >
+                  <StarIcon className={`h-4 w-4 ${link.starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                </Button>
+
                 {link.image ? (
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 w-12 h-12 rounded overflow-hidden bg-muted"
+                    className="shrink-0 w-14 h-14 rounded-md overflow-hidden bg-muted"
                   >
                     <img
                       src={link.image}
@@ -282,7 +291,7 @@ export default function Home() {
                     />
                   </a>
                 ) : (
-                  <div className="shrink-0 w-12 h-12 rounded bg-muted" />
+                  <div className="shrink-0 w-14 h-14 rounded-md bg-muted" />
                 )}
 
                 <a
@@ -291,48 +300,40 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="flex-1 min-w-0"
                 >
-                  <h3 className="font-medium text-xs leading-tight line-clamp-1">{link.title}</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
+                  <h3 className="font-medium text-sm leading-tight line-clamp-1">{link.title}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                     {link.category && <span className="line-clamp-1">{link.category}</span>}
                     {link.rating && (
                       <span className="flex items-center gap-0.5">
-                        <StarIcon className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
+                        <StarIcon className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                         {link.rating}
                       </span>
                     )}
                     {link.priceLevel && <span>{link.priceLevel}</span>}
                   </div>
-                  {link.city && <p className="text-[10px] text-muted-foreground">{link.city}</p>}
+                  {link.city && <p className="text-xs text-muted-foreground">{link.city}</p>}
                 </a>
 
-                <div className="flex gap-0.5">
+                <div className="flex gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
-                    onClick={() => handleStar(link.id, !!link.starred)}
-                  >
-                    <StarIcon className={`h-3 w-3 ${link.starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
+                    className="h-9 w-9"
                     onClick={() => handleCopy(link.url, link.id)}
                   >
                     {copiedId === link.id ? (
-                      <Check className="h-3 w-3 text-green-500" />
+                      <Check className="h-4 w-4 text-green-500" />
                     ) : (
-                      <Copy className="h-3 w-3 text-muted-foreground" />
+                      <Copy className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:bg-destructive hover:text-white"
+                    className="h-9 w-9 text-muted-foreground hover:bg-destructive hover:text-white"
                     onClick={() => handleDelete(link.id)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
