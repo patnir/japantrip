@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
+import { put, head } from "@vercel/blob";
 import { Link } from "@/app/types";
 
-const DATA_FILE = path.join(process.cwd(), "data", "links.json");
+const BLOB_KEY = "links.json";
 
 async function readLinks(): Promise<Link[]> {
   try {
-    const data = await fs.readFile(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(data);
-    return parsed.links || [];
+    const blob = await head(BLOB_KEY);
+    if (!blob) return [];
+    
+    const response = await fetch(blob.url);
+    const data = await response.json();
+    return data.links || [];
   } catch {
     return [];
   }
 }
 
 async function writeLinks(links: Link[]): Promise<void> {
-  await fs.writeFile(DATA_FILE, JSON.stringify({ links }, null, 2));
+  await put(BLOB_KEY, JSON.stringify({ links }, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+  });
 }
 
 export async function GET() {
