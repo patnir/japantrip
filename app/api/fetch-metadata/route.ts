@@ -61,11 +61,21 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
     // Try to extract Place ID from URL
     // Format 1: /place/.../@.../data=...!1s0x...:0x...!... (the hex after 0x is the place ID encoded)
     // Format 2: /place/.../@.../data=...!3m1!4b1!4m6!3m5!1s<PLACE_ID>!...
+    // Format 3: ?q=...&ftid=0x...:0x... (from short links)
     // The place ID often appears after "!1s" or as a ChIJ... string
     const placeIdMatch = url.match(/!1s(0x[a-f0-9]+:0x[a-f0-9]+)|!1s(ChIJ[A-Za-z0-9_-]+)/);
     if (placeIdMatch) {
       placeId = placeIdMatch[1] || placeIdMatch[2];
-      console.log("[Maps] Extracted Place ID:", placeId);
+      console.log("[Maps] Extracted Place ID from data:", placeId);
+    }
+    
+    // Try ftid parameter (from short link redirects)
+    if (!placeId) {
+      const ftidMatch = url.match(/ftid=(0x[a-f0-9]+:0x[a-f0-9]+)/);
+      if (ftidMatch) {
+        placeId = ftidMatch[1];
+        console.log("[Maps] Extracted Place ID from ftid:", placeId);
+      }
     }
 
     // Extract coordinates from URL: /@35.6949274,139.6924912,17z
@@ -80,7 +90,19 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
     const placeMatch = url.match(/\/maps\/place\/([^\/]+)/);
     if (placeMatch) {
       placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
-      console.log("[Maps] Extracted place name:", placeName);
+      console.log("[Maps] Extracted place name from path:", placeName);
+    }
+    
+    // Try ?q= parameter (from short link redirects like maps.google.com/?q=Place+Name,+Address)
+    if (!placeName) {
+      const qMatch = url.match(/[?&]q=([^&]+)/);
+      if (qMatch) {
+        // The q parameter often contains "Place Name, Address" - extract just the place name
+        const qValue = decodeURIComponent(qMatch[1].replace(/\+/g, " "));
+        // Take everything before the first comma (usually the place name)
+        placeName = qValue.split(",")[0].trim();
+        console.log("[Maps] Extracted place name from q param:", placeName);
+      }
     }
 
     if (!placeName && !placeId) {
