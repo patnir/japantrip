@@ -113,6 +113,13 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
     // If we have a place ID, use it for more accurate results
     const placeDetails = await fetchPlaceDetails(placeName, placeId, latitude, longitude);
     if (placeDetails) {
+      // Use coordinates from URL if API didn't return them
+      if (!placeDetails.latitude && latitude) {
+        placeDetails.latitude = latitude;
+      }
+      if (!placeDetails.longitude && longitude) {
+        placeDetails.longitude = longitude;
+      }
       return placeDetails;
     }
 
@@ -128,6 +135,8 @@ async function handleGoogleMapsLink(url: string): Promise<PlaceMetadata | null> 
       rating: null,
       reviewCount: null,
       priceLevel: null,
+      latitude,
+      longitude,
     };
   } catch (error) {
     console.error("Error handling Google Maps link:", error);
@@ -146,6 +155,8 @@ interface PlaceMetadata {
   rating: number | null;
   reviewCount: number | null;
   priceLevel: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 async function fetchPlaceDetails(placeName: string | null, placeId: string | null, latitude: number | null = null, longitude: number | null = null): Promise<PlaceMetadata | null> {
@@ -173,7 +184,7 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
           headers: {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask": "id,displayName,formattedAddress,types,rating,userRatingCount,photos,priceLevel,primaryType",
+            "X-Goog-FieldMask": "id,displayName,formattedAddress,types,rating,userRatingCount,photos,priceLevel,primaryType,location",
           },
         });
         
@@ -221,7 +232,7 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.types,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.primaryType",
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.types,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.primaryType,places.location",
         },
         body: JSON.stringify(searchBody),
       });
@@ -257,10 +268,12 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
       priceLevel = priceMap[place.priceLevel] || null;
     }
     
-    // Photo
+    // Photo - store just the photo name/reference, not the full URL
+    // The image proxy will construct the full URL with the API key
     let imageUrl: string | null = null;
     if (place.photos && place.photos.length > 0) {
-      imageUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${apiKey}`;
+      // Store as a special format that the image proxy can recognize
+      imageUrl = `places-photo:${place.photos[0].name}`;
     }
     
     // Extract city from address
@@ -277,6 +290,8 @@ async function fetchPlaceDetails(placeName: string | null, placeId: string | nul
       rating: place.rating || null,
       reviewCount: place.userRatingCount || null,
       priceLevel,
+      latitude: place.location?.latitude || null,
+      longitude: place.location?.longitude || null,
     };
   } catch (error) {
     console.error("Places API error:", error);

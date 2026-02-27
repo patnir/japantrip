@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Link, getCategoryGroup } from "./types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { X, Loader2, Star as StarIcon, Copy, Check, Trash2 } from "lucide-react";
+import { X, Loader2, Star as StarIcon, Copy, Check, Trash2, RefreshCw } from "lucide-react";
 import NextLink from "next/link";
+
+const MapView = dynamic(() => import("./components/MapView"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
+      Loading map...
+    </div>
+  ),
+});
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Food: "#f97316",
+  Hotels: "#8b5cf6",
+  Attractions: "#ec4899",
+  Shopping: "#06b6d4",
+  Transport: "#22c55e",
+  Other: "#6b7280",
+};
 
 export default function Home() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -21,6 +40,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -90,7 +110,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const metadataRes = await fetch("/api/fetch-metadata", {
+        const metadataRes = await fetch("/api/fetch-metadata", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -107,6 +127,8 @@ export default function Home() {
         rating: null,
         reviewCount: null,
         priceLevel: null,
+        latitude: null as number | null,
+        longitude: null as number | null,
       };
       if (metadataRes.ok) {
         metadata = await metadataRes.json();
@@ -176,6 +198,38 @@ export default function Home() {
     }
   };
 
+  const handleRefresh = async (link: Link) => {
+    setRefreshingId(link.id);
+    try {
+      const metadataRes = await fetch("/api/fetch-metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: link.url }),
+      });
+
+      if (metadataRes.ok) {
+        const metadata = await metadataRes.json();
+        
+        const updateRes = await fetch("/api/links", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: link.id, metadata }),
+        });
+
+        if (updateRes.ok) {
+          const updatedLink = await updateRes.json();
+          setLinks((prev) =>
+            prev.map((l) => (l.id === link.id ? updatedLink : l))
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh link:", error);
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-xl mx-auto px-3 py-4">
@@ -226,7 +280,15 @@ export default function Home() {
                 All
               </ToggleGroupItem>
               {categoryGroups.map((group) => (
-                <ToggleGroupItem key={group} value={group} className="text-xs h-7 px-2.5 rounded-full">
+                <ToggleGroupItem 
+                  key={group} 
+                  value={group} 
+                  className="text-xs h-7 px-2.5 rounded-full gap-1.5"
+                >
+                  <span 
+                    className="w-2 h-2 rounded-full" 
+                    style={{ backgroundColor: CATEGORY_COLORS[group] || CATEGORY_COLORS.Other }}
+                  />
                   {group}
                 </ToggleGroupItem>
               ))}
@@ -243,6 +305,12 @@ export default function Home() {
               <Trash2 className="h-3 w-3" />
               Archive
             </NextLink>
+          </div>
+        )}
+
+        {selectedCity !== "all" && filteredLinks.length > 0 && (
+          <div className="mb-3">
+            <MapView links={filteredLinks} />
           </div>
         )}
 
@@ -282,7 +350,8 @@ export default function Home() {
                     className="shrink-0 w-14 h-14 rounded-md overflow-hidden bg-muted"
                   >
                     <img
-                      src={link.image}
+                      key={link.image}
+                      src={link.image.startsWith("places-photo:") || link.image.includes("places.googleapis.com") ? `/api/image-proxy?url=${encodeURIComponent(link.image)}` : link.image}
                       alt=""
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -315,6 +384,15 @@ export default function Home() {
                 </a>
 
                 <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => handleRefresh(link)}
+                    disabled={refreshingId === link.id}
+                  >
+                    <RefreshCw className={`h-4 w-4 text-muted-foreground ${refreshingId === link.id ? "animate-spin" : ""}`} />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

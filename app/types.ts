@@ -14,6 +14,8 @@ export interface Link {
   createdAt: string;
   deleted?: boolean;
   starred?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 // Based on Google Places API types: https://developers.google.com/maps/documentation/places/web-service/place-types

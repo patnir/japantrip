@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
       rating: body.rating || null,
       reviewCount: body.reviewCount || null,
       priceLevel: body.priceLevel || null,
+      latitude: body.latitude || null,
+      longitude: body.longitude || null,
       createdAt: new Date().toISOString(),
     };
     
@@ -106,7 +108,8 @@ export async function DELETE(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, restore, starred } = await request.json();
+    const body = await request.json();
+    const { id, restore, starred, metadata } = body;
     
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -125,6 +128,21 @@ export async function PATCH(request: NextRequest) {
     
     if (typeof starred === "boolean") {
       links[linkIndex].starred = starred;
+    }
+    
+    if (metadata) {
+      links[linkIndex].title = metadata.title || links[linkIndex].title;
+      links[linkIndex].description = metadata.description ?? links[linkIndex].description;
+      links[linkIndex].image = "image" in metadata ? metadata.image : links[linkIndex].image;
+      links[linkIndex].category = metadata.category ?? links[linkIndex].category;
+      links[linkIndex].types = metadata.types ?? links[linkIndex].types;
+      links[linkIndex].address = metadata.address ?? links[linkIndex].address;
+      links[linkIndex].city = metadata.city ?? links[linkIndex].city;
+      links[linkIndex].rating = metadata.rating ?? links[linkIndex].rating;
+      links[linkIndex].reviewCount = metadata.reviewCount ?? links[linkIndex].reviewCount;
+      links[linkIndex].priceLevel = metadata.priceLevel ?? links[linkIndex].priceLevel;
+      links[linkIndex].latitude = metadata.latitude ?? links[linkIndex].latitude;
+      links[linkIndex].longitude = metadata.longitude ?? links[linkIndex].longitude;
     }
     
     await writeLinks(links);

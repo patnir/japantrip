@@ -8,21 +8,25 @@
     "start": "next start",
     "lint": "eslint",
     "backup": "npx tsx scripts/backup.ts",
-    "reset": "npx tsx scripts/reset.ts"
+    "reset": "npx tsx scripts/reset.ts",
+    "backfill-coords": "npx tsx scripts/backfill-coords.ts"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
+    "@types/leaflet": "^1.9.21",
     "@upstash/redis": "^1.36.1",
     "@vercel/blob": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-leaflet": "^5.0.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

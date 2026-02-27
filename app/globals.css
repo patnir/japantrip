@@ -123,3 +123,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Leaflet marker styles */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
