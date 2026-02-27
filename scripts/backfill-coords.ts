@@ -83,7 +83,7 @@ async function fetchMetadata(url: string): Promise<{ latitude: number | null; lo
         longitude = parseFloat(newCoordsMatch[2]);
         return { latitude, longitude };
       }
-    } catch (e) {
+    } catch {
       console.log("  Could not resolve short URL");
     }
   }
