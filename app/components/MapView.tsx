@@ -117,7 +117,7 @@ export default function MapView({ links }: MapViewProps) {
 
   if (linksWithCoords.length === 0) {
     return (
-      <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
+      <div className="w-full h-[70vh] bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
         No locations with coordinates found
       </div>
     );
@@ -127,14 +127,14 @@ export default function MapView({ links }: MapViewProps) {
 
   if (!isMounted) {
     return (
-      <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
+      <div className="w-full h-[70vh] bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
         Loading map...
       </div>
     );
   }
 
   return (
-    <div className="w-full h-64 rounded-lg overflow-hidden border">
+    <div className="w-full h-[70vh] rounded-lg overflow-hidden border">
       <MapContainer
         center={center}
         zoom={13}
